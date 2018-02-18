@@ -16,14 +16,15 @@ class segment_tree
         init_left_right(1, 0, n - 1);
     }
 
-    segment_tree(const std::vector<T>& ar)
-        : n(ar.size())
+    segment_tree(const std::vector<T>& init_ar)
+        : n(init_ar.size())
+        , ar(init_ar)
         , tree(4 * n + 2)
         , left(4 * n + 2)
         , right(4 * n + 2)
     {
         init_left_right(1, 0, n - 1);
-        construct_tree(1, ar);
+        construct_tree(1);
     }
 
     node* range_query(int lo, int hi)
@@ -31,13 +32,15 @@ class segment_tree
         return range_query(1, lo, hi);
     }
 
-    bool point_update(int index, T new_value)
+    void point_update(int index, T new_value)
     {
-        return false;
+        ar[index] = new_value;
+        update_tree_over_point(1, index);
     }
 
     private:
     size_t n;
+    std::vector<T> ar;
     std::vector<node> tree;
     std::vector<int> left;
     std::vector<int> right;
@@ -55,7 +58,7 @@ class segment_tree
         }
     }
 
-    void construct_tree(int node_index, const std::vector<T>& ar)
+    void construct_tree(int node_index)
     {
         int lo = left[node_index];
         int hi = right[node_index];
@@ -65,8 +68,8 @@ class segment_tree
         }
         else
         {
-            construct_tree(2 * node_index, ar);
-            construct_tree(2 * node_index + 1, ar);
+            construct_tree(2 * node_index);
+            construct_tree(2 * node_index + 1);
             tree[node_index] = *merge(&tree[2 * node_index], &tree[2 * node_index + 1]);
         }
     }
@@ -85,9 +88,9 @@ class segment_tree
             return &tree[node_index];
         }
 
+        // Interval partially intersects
         node* left_solution = range_query(2 * node_index, lo, hi);
         node* right_solution = range_query(2 * node_index + 1, lo, hi);
-
         if (left_solution == nullptr)
         {
             return right_solution;
@@ -97,6 +100,29 @@ class segment_tree
             return left_solution;
         }
         return merge(left_solution, right_solution);
+    }
+
+    void update_tree_over_point(int node_index, int index)
+    {
+        // Interval doesn't contain index
+        if (index > right[node_index] || index < left[node_index])
+        {
+            return;
+        }
+
+        // Interval has converged to index
+        if (left[node_index] == right[node_index])
+        {
+            set_default_value(tree[node_index], ar[index]);
+            return;
+        }
+
+        // Interval contains index
+        update_tree_over_point(2 * node_index, index);
+        node* left_solution = &tree[2 * node_index];
+        update_tree_over_point(2 * node_index + 1, index);
+        node* right_solution = &tree[2 * node_index + 1];
+        tree[node_index] = *merge(left_solution, right_solution);
     }
 };
 

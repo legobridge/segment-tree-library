@@ -28,12 +28,14 @@ node* merge(node* a, node* b)
 
 void runRMQOnSegmentTree(const std::vector<int>& ar, const std::vector<std::pair<int, int>>& queries, std::vector<int>& results)
 {
+    size_t n = ar.size();
     segment_tree <int, node, set_default_value, merge> st(ar);
     size_t m = queries.size();
     for (int i = 0; i < m; i++)
     {
         results[i] = (st.range_query(queries[i].first, queries[i].second))->min;
     }
+    st.point_update(n - 1, -1);
 }
 
 void runBruteForce(const std::vector<int>& ar, const std::vector<std::pair<int, int>>& queries, std::vector<int>& results)
@@ -173,30 +175,17 @@ int main()
 	runBruteForce(ar, queries, bruteForceResults);
 	std::cout << "Done." << std::endl;
 
-	std::cout << "Processing queries using root N method (refer to documentation for more information)..." << std::endl;
+	std::cout << "Processing queries using Root-N Method (refer to documentation for more information)..." << std::endl;
 	runRootNMethod(ar, queries, rootNMethodResults);
 	std::cout << "Done." << std::endl;
 
-	if (resultsAreConcordant(bruteForceResults, rootNMethodResults))
-	{
-		std::cout << "Check passed" << std::endl;
-	}
-	else
-	{
-		std::cout << "Check failed" << std::endl;
-		for (int i = 0; i < m; i++)
-		{
-			std::cout << bruteForceResults[i] << " " << rootNMethodResults[i] << std::endl;
-		}
-	}
-
     if (resultsAreConcordant(bruteForceResults, segmentTreeResults))
     {
-        std::cout << "Check passed" << std::endl;
+        std::cout << "Brute force check passed" << std::endl;
     }
     else
     {
-        std::cout << "Check failed" << std::endl;
+        std::cout << "Brute force check failed" << std::endl;
         for (int i = 0; i < m; i++)
         {
             std::cout << bruteForceResults[i] << " " << segmentTreeResults[i] << std::endl;
@@ -205,14 +194,14 @@ int main()
 
     if (resultsAreConcordant(segmentTreeResults, rootNMethodResults))
     {
-        std::cout << "Check passed" << std::endl;
+        std::cout << "Root-N Method check passed" << std::endl;
     }
     else
     {
-        std::cout << "Check failed" << std::endl;
+        std::cout << "Root-N Method check failed" << std::endl;
         for (int i = 0; i < m; i++)
         {
-            std::cout << segmentTreeResults[i] << " " << rootNMethodResults[i] << std::endl;
+            std::cout << rootNMethodResults[i] << " " << segmentTreeResults[i] << std::endl;
         }
     }
 
