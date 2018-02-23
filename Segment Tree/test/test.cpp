@@ -175,7 +175,7 @@ int main()
 	runBruteForce(ar, queries, bruteForceResults);
 	std::cout << "Done." << std::endl;
 
-	std::cout << "Processing queries using Root-N Method (refer to documentation for more information)..." << std::endl;
+	std::cout << "Processing queries using Root-N Method..." << std::endl;
 	runRootNMethod(ar, queries, rootNMethodResults);
 	std::cout << "Done." << std::endl;
 

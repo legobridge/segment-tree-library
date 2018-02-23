@@ -3,49 +3,59 @@
 
 #include <vector>
 
-template <typename T, typename node, void (*set_default_value)(node&, T), node* (*merge)(node*, node*)>
+template <  typename        T,
+            typename        node,
+            void            (*set_default_value)(node&, T),
+            node*           (*merge)(node*, node*)    >
 class segment_tree
 {
     public:
-    segment_tree(size_t N)
-        : n(N)
-        , tree(4 * n + 2)
-        , left(4 * n + 2)
-        , right(4 * n + 2)
+    segment_tree( size_t N )
+        : ar_size(N)
+        , ar(ar_size, NULL)
+        , tree(4 * ar_size + 2)
+        , left(4 * ar_size + 2)
+        , right(4 * ar_size + 2)
     {
-        init_left_right(1, 0, n - 1);
+        init_left_right(1, 0, ar_size - 1);
     }
 
-    segment_tree(const std::vector<T>& init_ar)
-        : n(init_ar.size())
+    segment_tree( const std::vector<T>& init_ar )
+        : ar_size(init_ar.size())
         , ar(init_ar)
-        , tree(4 * n + 2)
-        , left(4 * n + 2)
-        , right(4 * n + 2)
+        , tree(4 * ar_size + 2)
+        , left(4 * ar_size + 2)
+        , right(4 * ar_size + 2)
     {
-        init_left_right(1, 0, n - 1);
+        init_left_right(1, 0, ar_size - 1);
         construct_tree(1);
     }
 
-    node* range_query(int lo, int hi)
+    void construct_tree( const std::vector<T>& init_ar )
+    {
+        ar = init_ar;
+        construct_tree(1);
+    }
+
+    node* range_query( int lo, int hi )
     {
         return range_query(1, lo, hi);
     }
 
-    void point_update(int index, T new_value)
+    void point_update( int index, T new_value )
     {
         ar[index] = new_value;
         update_tree_over_point(1, index);
     }
 
     private:
-    size_t n;
+    size_t ar_size;
     std::vector<T> ar;
     std::vector<node> tree;
     std::vector<int> left;
     std::vector<int> right;
 
-    void init_left_right(int node_index, int lo, int hi)
+    void init_left_right( int node_index, int lo, int hi )
     {
         left[node_index] = lo;
         right[node_index] = hi;
@@ -58,7 +68,7 @@ class segment_tree
         }
     }
 
-    void construct_tree(int node_index)
+    void construct_tree( int node_index )
     {
         int lo = left[node_index];
         int hi = right[node_index];
@@ -74,7 +84,7 @@ class segment_tree
         }
     }
 
-    node* range_query(int node_index, int lo, int hi)
+    node* range_query( int node_index, int lo, int hi )
     {
         // Interval doesn't intersect at all
         if (lo > right[node_index] || hi < left[node_index])
@@ -102,7 +112,7 @@ class segment_tree
         return merge(left_solution, right_solution);
     }
 
-    void update_tree_over_point(int node_index, int index)
+    void update_tree_over_point( int node_index, int index )
     {
         // Interval doesn't contain index
         if (index > right[node_index] || index < left[node_index])
