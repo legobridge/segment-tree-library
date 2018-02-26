@@ -254,6 +254,11 @@ namespace min_int_query
         std::vector<int> segment_tree_results(m);
         for (int i = 0; i < (int)m; i++)
         {
+            ASSERT_LE(queries[i].first, queries[i].second);
+            ASSERT_LT(queries[i].first, n);
+            ASSERT_LT(queries[i].second, n);
+            ASSERT_GE(queries[i].first, 0);
+            ASSERT_GE(queries[i].second, 0);
             segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second))->min;
         }
 
@@ -281,6 +286,11 @@ namespace min_int_query
         std::vector<int> segment_tree_results(m);
         for (int i = 0; i < (int)m; i++)
         {
+            ASSERT_LE(queries[i].first, queries[i].second);
+            ASSERT_LT(queries[i].first, n);
+            ASSERT_LT(queries[i].second, n);
+            ASSERT_GE(queries[i].first, 0);
+            ASSERT_GE(queries[i].second, 0);
             segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second))->min;
         }
 
@@ -321,7 +331,6 @@ namespace min_int_query
             ASSERT_LT(queries[i].second, n);
             ASSERT_GE(queries[i].first, 0);
             ASSERT_GE(queries[i].second, 0);
-
             segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second))->min;
         }
 
