@@ -9,7 +9,7 @@ template <  typename        T,
             node*           (*merge)(node*, node*)    >
 class segment_tree
 {
-    public:
+public:
     segment_tree( size_t N )
         : ar_size(N)
         , ar(ar_size, NULL)
@@ -37,6 +37,16 @@ class segment_tree
         construct_tree(1);
     }
 
+    size_t get_array_size()
+    {
+        return ar_size;
+    }
+
+    std::vector<T>& get_array()
+    {
+        return ar;
+    }
+
     node* range_query( int lo, int hi )
     {
         return range_query(1, lo, hi);
@@ -48,7 +58,7 @@ class segment_tree
         update_tree_over_point(1, index);
     }
 
-    private:
+private:
     size_t ar_size;
     std::vector<T> ar;
     std::vector<node> tree;
