@@ -20,13 +20,13 @@ namespace min_int_query
         x.min = y;
     }
 
-    node* merge( node* a, node* b )
+    node merge( node* a, node* b )
     {
         if (a->min <= b->min)
         {
-            return a;
+            return *a;
         }
-        return b;
+        return *b;
     }
     
     // Generates an array of n random integers ranging from 1 to n
@@ -278,7 +278,7 @@ namespace min_int_query
             ASSERT_LT(queries[i].second, n);
             ASSERT_GE(queries[i].first, 0);
             ASSERT_GE(queries[i].second, 0);
-            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second))->min;
+            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).min;
         }
 
         std::vector<int> brute_force_results(m);
@@ -296,7 +296,7 @@ namespace min_int_query
         std::vector<int> parameter_array;
         fill_with_random_integers(n, parameter_array);
 
-        size_t m = 42000;
+        size_t m = 420;
         std::vector<std::pair<int, int>> queries;
         fill_with_random_intervals(n, m, queries);
 
@@ -310,7 +310,7 @@ namespace min_int_query
             ASSERT_LT(queries[i].second, n);
             ASSERT_GE(queries[i].first, 0);
             ASSERT_GE(queries[i].second, 0);
-            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second))->min;
+            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).min;
         }
 
         std::vector<int> brute_force_results(m);
@@ -350,7 +350,7 @@ namespace min_int_query
             ASSERT_LT(queries[i].second, n);
             ASSERT_GE(queries[i].first, 0);
             ASSERT_GE(queries[i].second, 0);
-            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second))->min;
+            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).min;
         }
 
         std::vector<int> root_N_results(m);
@@ -391,7 +391,7 @@ namespace min_int_query
                 ASSERT_GE(queries[i].second, 0);
                 ASSERT_LE(queries[i].first, index);
                 ASSERT_GE(queries[i].second, index);
-                segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second))->min;
+                segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).min;
             }
 
             for (int i = 0; i < (int)m; i++)

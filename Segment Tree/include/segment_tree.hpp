@@ -2,11 +2,12 @@
 #define SEGMENT_TREE
 
 #include <vector>
+#include <boost/optional.hpp>
 
 template <  typename        T,
             typename        node,
             void            (*set_default_value)(node&, T),
-            node*           (*merge)(node*, node*)    >
+            node           (*merge)(node*, node*)    >
 class segment_tree
 {
 public:
@@ -47,9 +48,9 @@ public:
         return ar;
     }
 
-    node* range_query( int lo, int hi )
+    node range_query( int lo, int hi )
     {
-        return range_query(1, lo, hi);
+        return *range_query(1, lo, hi);
     }
 
     void point_update( int index, T new_value )
@@ -90,36 +91,42 @@ private:
         {
             construct_tree(2 * node_index);
             construct_tree(2 * node_index + 1);
-            tree[node_index] = *merge(&tree[2 * node_index], &tree[2 * node_index + 1]);
+            tree[node_index] = merge(&tree[2 * node_index], &tree[2 * node_index + 1]);
         }
     }
 
-    node* range_query( int node_index, int lo, int hi )
+    boost::optional<node> range_query( int node_index, int lo, int hi )
     {
         // Interval doesn't intersect at all
         if (lo > right[node_index] || hi < left[node_index])
         {
-            return nullptr;
+            return boost::none;
         }
 
         // Interval completely contained
         if (lo <= left[node_index] && hi >= right[node_index])
         {
-            return &tree[node_index];
+            return tree[node_index];
         }
 
         // Interval partially intersects
-        node* left_solution = range_query(2 * node_index, lo, hi);
-        node* right_solution = range_query(2 * node_index + 1, lo, hi);
-        if (left_solution == nullptr)
+        boost::optional<node> left_solution = range_query(2 * node_index, lo, hi);
+        boost::optional<node> right_solution = range_query(2 * node_index + 1, lo, hi);
+        if (!right_solution && !left_solution)
         {
-            return right_solution;
+            return boost::none;
         }
-        if (right_solution == nullptr)
+        if (!left_solution && right_solution)
         {
-            return left_solution;
+            return *right_solution;
         }
-        return merge(left_solution, right_solution);
+        if (!right_solution && left_solution)
+        {
+            return *left_solution;
+        }
+        node ls = *left_solution;
+        node rs = *right_solution;
+        return merge(&ls, &rs);
     }
 
     void update_tree_over_point( int node_index, int index )
@@ -142,7 +149,7 @@ private:
         node* left_solution = &tree[2 * node_index];
         update_tree_over_point(2 * node_index + 1, index);
         node* right_solution = &tree[2 * node_index + 1];
-        tree[node_index] = *merge(left_solution, right_solution);
+        tree[node_index] = merge(left_solution, right_solution);
     }
 };
 
