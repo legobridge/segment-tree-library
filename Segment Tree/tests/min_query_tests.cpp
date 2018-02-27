@@ -15,12 +15,12 @@ namespace min_int_query
         int min;
     };
 
-    void set_default_value(node& x, int y)
+    void set_default_value( node& x, int y )
     {
         x.min = y;
     }
 
-    node* merge(node* a, node* b)
+    node* merge( node* a, node* b )
     {
         if (a->min <= b->min)
         {
@@ -29,6 +29,8 @@ namespace min_int_query
         return b;
     }
 
+
+    // Tests for both types of constructors
 
     TEST( min_int_segment_tree_constructor, size_parameter_case1 )
     {
@@ -69,8 +71,8 @@ namespace min_int_query
         }
     }
 
-    // Random integer array generator
-    void fill_with_random_integers(size_t n, std::vector<int>& parameter_array)
+    // Generates an array of n random integers ranging from 1 to n
+    void fill_with_random_integers( size_t n, std::vector<int>& parameter_array )
     {
         std::random_device rd;
         std::mt19937 gen(rd());
@@ -125,7 +127,7 @@ namespace min_int_query
         }
     }
 
-    // Random query array generator
+    // Generates m random interval queries
     void fill_with_random_intervals( size_t n, size_t m, std::vector<std::pair<int, int>>& queries )
     {
         std::random_device rd;
@@ -177,8 +179,8 @@ namespace min_int_query
 
     // Root-N method to solve the RMQ problem
     void run_root_N_method( const std::vector<int>& ar,
-                         const std::vector<std::pair<int, int>>& queries,
-                         std::vector<int>& results )
+                            const std::vector<std::pair<int, int>>& queries,
+                            std::vector<int>& results )
     {
         size_t n = ar.size();
         size_t m = queries.size();
@@ -239,7 +241,7 @@ namespace min_int_query
 
     // Tests for range_query()
 
-    TEST(min_int_segment_tree_rquery, vector_parameter_case1)
+    TEST( min_int_segment_tree_rquery, vector_parameter_case1 )
     {
         size_t n = 1;
         std::vector<int> parameter_array;
@@ -311,7 +313,7 @@ namespace min_int_query
         }
     }
 
-    TEST(min_int_segment_tree_rquery, vector_parameter_case3)
+    TEST( min_int_segment_tree_rquery, vector_parameter_case3 )
     {
         size_t n = 42000;
         std::vector<int> parameter_array;
@@ -340,6 +342,62 @@ namespace min_int_query
         for (int i = 0; i < (int)m; i++)
         {
             EXPECT_EQ(root_N_results[i], segment_tree_results[i]);
+        }
+    }
+
+
+    // Generates m random intervals containing a given index
+    void fill_with_random_intervals( size_t n, size_t m, int index, std::vector<std::pair<int, int>>& queries )
+    {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dis1(0, index);
+        std::uniform_int_distribution<> dis2(index, n - 1);
+        for (int i = 0; i < (int)m; i++)
+        {
+            // Generate the lower bound of the interval
+            int x = dis1(gen);
+            // Generate the upper bound of the interval
+            int y = dis2(gen);
+            queries.push_back({x, y});
+        }
+    }
+
+    // Test for point_update()
+    TEST( min_int_segment_tree_pupdate, vector_parameter_case )
+    {
+        size_t n = 42000;
+        std::vector<int> parameter_array;
+        fill_with_random_integers(n, parameter_array);
+
+        for (int index = 0; index < (int)n; index += 1000)
+        {
+            segment_tree< int, node, set_default_value, merge > segtree(parameter_array);
+
+            int lowest_value_yet = -index;
+            segtree.point_update(index, lowest_value_yet);
+
+            size_t m = 420;
+            std::vector<std::pair<int, int>> queries;
+            fill_with_random_intervals(n, m, index, queries);
+
+            std::vector<int> segment_tree_results(m);
+            for (int i = 0; i < (int)m; i++)
+            {
+                ASSERT_LE(queries[i].first, queries[i].second);
+                ASSERT_LT(queries[i].first, n);
+                ASSERT_LT(queries[i].second, n);
+                ASSERT_GE(queries[i].first, 0);
+                ASSERT_GE(queries[i].second, 0);
+                ASSERT_LE(queries[i].first, index);
+                ASSERT_GE(queries[i].second, index);
+                segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second))->min;
+            }
+
+            for (int i = 0; i < (int)m; i++)
+            {
+                EXPECT_EQ(segment_tree_results[i], -index);
+            }
         }
     }
 }
