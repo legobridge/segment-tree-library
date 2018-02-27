@@ -28,49 +28,7 @@ namespace min_int_query
         }
         return b;
     }
-
-
-    // Tests for both types of constructors
-
-    TEST( min_int_segment_tree_constructor, size_parameter_case1 )
-    {
-        size_t n = 1;
-        segment_tree< int, node, set_default_value, merge > segtree(n);
-        EXPECT_EQ(segtree.get_array_size(), n);
-        std::vector<int> array = segtree.get_array();
-        EXPECT_EQ(array.size(), n);
-        for (int i = 0; i < (int)array.size(); i++)
-        {
-            EXPECT_EQ(array[i], NULL);
-        }
-    }
-
-    TEST( min_int_segment_tree_constructor, size_parameter_case2 )
-    {
-        size_t n = 42;
-        segment_tree< int, node, set_default_value, merge > segtree(n);
-        EXPECT_EQ(segtree.get_array_size(), n);
-        std::vector<int> array = segtree.get_array();
-        EXPECT_EQ(array.size(), n);
-        for (int i = 0; i < (int)array.size(); i++)
-        {
-            EXPECT_EQ(array[i], NULL);
-        }
-    }
-
-    TEST( min_int_segment_tree_constructor, size_parameter_case3 )
-    {
-        size_t n = 42000;
-        segment_tree< int, node, set_default_value, merge > segtree(n);
-        EXPECT_EQ(segtree.get_array_size(), n);
-        std::vector<int> array = segtree.get_array();
-        EXPECT_EQ(array.size(), n);
-        for (int i = 0; i < (int)array.size(); i++)
-        {
-            EXPECT_EQ(array[i], NULL);
-        }
-    }
-
+    
     // Generates an array of n random integers ranging from 1 to n
     void fill_with_random_integers( size_t n, std::vector<int>& parameter_array )
     {
@@ -80,50 +38,6 @@ namespace min_int_query
         for (int i = 0; i < (int)n; i++)
         {
             parameter_array.push_back(dis(gen));
-        }
-    }
-
-    TEST( min_int_segment_tree_constructor, vector_parameter_case1 )
-    {
-        size_t n = 1;
-        std::vector<int> parameter_array(n, 0);
-        segment_tree< int, node, set_default_value, merge > segtree(parameter_array);
-        EXPECT_EQ(segtree.get_array_size(), n);
-        std::vector<int> array = segtree.get_array();
-        EXPECT_EQ(array.size(), n);
-        for (int i = 0; i < (int)array.size(); i++)
-        {
-            EXPECT_EQ(array[i], parameter_array[i]);
-        }
-    }
-
-    TEST( min_int_segment_tree_constructor, vector_parameter_case2 )
-    {
-        size_t n = 42;
-        std::vector<int> parameter_array;
-        fill_with_random_integers(n, parameter_array);
-        segment_tree< int, node, set_default_value, merge > segtree(parameter_array);
-        EXPECT_EQ(segtree.get_array_size(), n);
-        std::vector<int> array = segtree.get_array();
-        EXPECT_EQ(array.size(), n);
-        for (int i = 0; i < (int)array.size(); i++)
-        {
-            EXPECT_EQ(array[i], parameter_array[i]);
-        }
-    }
-
-    TEST( min_int_segment_tree_constructor, vector_parameter_case3 )
-    {
-        size_t n = 42000;
-        std::vector<int> parameter_array;
-        fill_with_random_integers(n, parameter_array);
-        segment_tree< int, node, set_default_value, merge > segtree(parameter_array);
-        EXPECT_EQ(segtree.get_array_size(), n);
-        std::vector<int> array = segtree.get_array();
-        EXPECT_EQ(array.size(), n);
-        for (int i = 0; i < (int)array.size(); i++)
-        {
-            EXPECT_EQ(array[i], parameter_array[i]);
         }
     }
 
@@ -139,6 +53,23 @@ namespace min_int_query
             int x = dis1(gen);
             // Make a uniform distribution within [x, n]
             std::uniform_int_distribution<> dis2(x, n - 1);
+            // Generate the upper bound of the interval
+            int y = dis2(gen);
+            queries.push_back({x, y});
+        }
+    }
+
+    // Generates m random intervals containing a given index
+    void fill_with_random_intervals( size_t n, size_t m, int index, std::vector<std::pair<int, int>>& queries )
+    {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dis1(0, index);
+        std::uniform_int_distribution<> dis2(index, n - 1);
+        for (int i = 0; i < (int)m; i++)
+        {
+            // Generate the lower bound of the interval
+            int x = dis1(gen);
             // Generate the upper bound of the interval
             int y = dis2(gen);
             queries.push_back({x, y});
@@ -235,6 +166,92 @@ namespace min_int_query
                 }
             }
             results[i] = min;
+        }
+    }
+
+
+    // Tests for both types of constructors
+
+    TEST( min_int_segment_tree_constructor, size_parameter_case1 )
+    {
+        size_t n = 1;
+        segment_tree< int, node, set_default_value, merge > segtree(n);
+        EXPECT_EQ(segtree.get_array_size(), n);
+        std::vector<int> array = segtree.get_array();
+        EXPECT_EQ(array.size(), n);
+        for (int i = 0; i < (int)array.size(); i++)
+        {
+            EXPECT_EQ(array[i], NULL);
+        }
+    }
+
+    TEST( min_int_segment_tree_constructor, size_parameter_case2 )
+    {
+        size_t n = 42;
+        segment_tree< int, node, set_default_value, merge > segtree(n);
+        EXPECT_EQ(segtree.get_array_size(), n);
+        std::vector<int> array = segtree.get_array();
+        EXPECT_EQ(array.size(), n);
+        for (int i = 0; i < (int)array.size(); i++)
+        {
+            EXPECT_EQ(array[i], NULL);
+        }
+    }
+
+    TEST( min_int_segment_tree_constructor, size_parameter_case3 )
+    {
+        size_t n = 42000;
+        segment_tree< int, node, set_default_value, merge > segtree(n);
+        EXPECT_EQ(segtree.get_array_size(), n);
+        std::vector<int> array = segtree.get_array();
+        EXPECT_EQ(array.size(), n);
+        for (int i = 0; i < (int)array.size(); i++)
+        {
+            EXPECT_EQ(array[i], NULL);
+        }
+    }
+
+    TEST( min_int_segment_tree_constructor, vector_parameter_case1 )
+    {
+        size_t n = 1;
+        std::vector<int> parameter_array(n, 0);
+        segment_tree< int, node, set_default_value, merge > segtree(parameter_array);
+        EXPECT_EQ(segtree.get_array_size(), n);
+        std::vector<int> array = segtree.get_array();
+        EXPECT_EQ(array.size(), n);
+        for (int i = 0; i < (int)array.size(); i++)
+        {
+            EXPECT_EQ(array[i], parameter_array[i]);
+        }
+    }
+
+    TEST( min_int_segment_tree_constructor, vector_parameter_case2 )
+    {
+        size_t n = 42;
+        std::vector<int> parameter_array;
+        fill_with_random_integers(n, parameter_array);
+        segment_tree< int, node, set_default_value, merge > segtree(parameter_array);
+        EXPECT_EQ(segtree.get_array_size(), n);
+        std::vector<int> array = segtree.get_array();
+        EXPECT_EQ(array.size(), n);
+        for (int i = 0; i < (int)array.size(); i++)
+        {
+            EXPECT_EQ(array[i], parameter_array[i]);
+        }
+    }
+
+    TEST( min_int_segment_tree_constructor, vector_parameter_case3 )
+    {
+        size_t n = 42000;
+        std::vector<int> parameter_array;
+        fill_with_random_integers(n, parameter_array);
+        segment_tree< int, node, set_default_value, merge > segtree(parameter_array);
+        EXPECT_EQ(segtree.get_array_size(), n);
+        std::vector<int> array = segtree.get_array();
+        EXPECT_EQ(array.size(), n);
+        for (int i = 0; i < (int)array.size(); i++)
+        {
+            EXPECT_EQ(array[i], parameter_array[i]);
         }
     }
 
@@ -345,23 +362,6 @@ namespace min_int_query
         }
     }
 
-
-    // Generates m random intervals containing a given index
-    void fill_with_random_intervals( size_t n, size_t m, int index, std::vector<std::pair<int, int>>& queries )
-    {
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<> dis1(0, index);
-        std::uniform_int_distribution<> dis2(index, n - 1);
-        for (int i = 0; i < (int)m; i++)
-        {
-            // Generate the lower bound of the interval
-            int x = dis1(gen);
-            // Generate the upper bound of the interval
-            int y = dis2(gen);
-            queries.push_back({x, y});
-        }
-    }
 
     // Test for point_update()
     TEST( min_int_segment_tree_pupdate, vector_parameter_case )
