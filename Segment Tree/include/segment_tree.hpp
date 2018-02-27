@@ -13,7 +13,7 @@ class segment_tree
 public:
     segment_tree( size_t N )
         : ar_size(N)
-        , ar(ar_size, NULL)
+        , ar(ar_size)
         , tree(4 * ar_size + 2)
         , left(4 * ar_size + 2)
         , right(4 * ar_size + 2)

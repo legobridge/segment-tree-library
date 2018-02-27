@@ -104,10 +104,6 @@ namespace sum_int_query
         EXPECT_EQ(segtree.get_array_size(), n);
         std::vector<int> array = segtree.get_array();
         EXPECT_EQ(array.size(), n);
-        for (int i = 0; i < (int)array.size(); i++)
-        {
-            EXPECT_EQ(array[i], NULL);
-        }
     }
 
     TEST( sum_int_segment_tree_constructor, size_parameter_case2 )
@@ -117,10 +113,6 @@ namespace sum_int_query
         EXPECT_EQ(segtree.get_array_size(), n);
         std::vector<int> array = segtree.get_array();
         EXPECT_EQ(array.size(), n);
-        for (int i = 0; i < (int)array.size(); i++)
-        {
-            EXPECT_EQ(array[i], NULL);
-        }
     }
 
     TEST( sum_int_segment_tree_constructor, size_parameter_case3 )
@@ -130,10 +122,6 @@ namespace sum_int_query
         EXPECT_EQ(segtree.get_array_size(), n);
         std::vector<int> array = segtree.get_array();
         EXPECT_EQ(array.size(), n);
-        for (int i = 0; i < (int)array.size(); i++)
-        {
-            EXPECT_EQ(array[i], NULL);
-        }
     }
 
     TEST( sum_int_segment_tree_constructor, vector_parameter_case1 )
@@ -203,6 +191,10 @@ namespace sum_int_query
             ASSERT_LT(queries[i].second, n);
             ASSERT_GE(queries[i].first, 0);
             ASSERT_GE(queries[i].second, 0);
+        }
+
+        for (int i = 0; i < (int)m; i++)
+        {
             segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).sum;
         }
 
@@ -235,6 +227,10 @@ namespace sum_int_query
             ASSERT_LT(queries[i].second, n);
             ASSERT_GE(queries[i].first, 0);
             ASSERT_GE(queries[i].second, 0);
+        }
+
+        for (int i = 0; i < (int)m; i++)
+        {
             segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).sum;
         }
 
@@ -267,6 +263,10 @@ namespace sum_int_query
             ASSERT_LT(queries[i].second, n);
             ASSERT_GE(queries[i].first, 0);
             ASSERT_GE(queries[i].second, 0);
+        }
+
+        for (int i = 0; i < (int)m; i++)
+        {
             segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).sum;
         }
 

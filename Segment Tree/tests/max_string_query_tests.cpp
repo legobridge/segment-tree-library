@@ -1,43 +1,49 @@
 #include "pch.h"
 #include "segment_tree.hpp"
 
+#include <string>
 #include <vector>
 #include <utility>
 #include <random>
-#include <climits>
 
-namespace min_int_query
+namespace max_string_query
 {
-    // Structures and methods for testing the 
-    // minimum integer query form of the segment tree
+    // Structures and methods for testing the lexicographically
+    // maximum string query form of the segment tree
     struct node
     {
-        int min;
+        std::string max;
     };
 
-    void set_default_value( node& x, int y )
+    void set_default_value( node& x, std::string y )
     {
-        x.min = y;
+        x.max = y;
     }
 
     node merge( node* a, node* b )
     {
-        if (a->min <= b->min)
+        if (a->max >= b->max)
         {
             return *a;
         }
         return *b;
     }
     
-    // Generates an array of n random integers ranging from 1 to n
-    void fill_with_random_integers( size_t n, std::vector<int>& parameter_array )
+    // Generates an array of n random strings composed of lowercase letters
+    // Each string is arbitrarily defined to be 6 characters long
+    void fill_with_random_strings( size_t n, std::vector<std::string>& parameter_array )
     {
         std::random_device rd;
         std::mt19937 gen(rd());
-        std::uniform_int_distribution<> dis(1, n);
+        std::uniform_int_distribution<> dis(97, 122);
         for (int i = 0; i < (int)n; i++)
         {
-            parameter_array.push_back(dis(gen));
+            std::string s;
+            for (int j = 0; j < 6; j++)
+            {
+                s += (char)dis(gen);
+            }
+            parameter_array[i]= s;
         }
     }
 
@@ -76,42 +82,44 @@ namespace min_int_query
         }
     }
 
-    // Brute force method to solve RMQ problem
-    void run_brute_force( const std::vector<int>& ar, 
+    // Brute force method to solve the problem of finding
+    // the lexicographically largest string in a range
+    void run_brute_force( const std::vector<std::string>& ar, 
                           const std::vector<std::pair<int, int>>& queries, 
-                          std::vector<int>& results )
+                          std::vector<std::string>& results )
     {
         size_t n = ar.size();
         size_t m = queries.size();
-        std::vector<std::vector<int>> min_in_interval(n, std::vector<int>(n));
+        std::vector<std::vector<std::string>> max_in_interval(n, std::vector<std::string>(n));
         for (int i = 0; i < (int)n; i++)
         {
-            min_in_interval[i][i] = ar[i];
+            max_in_interval[i][i] = ar[i];
         }
         for (int i = 0; i < (int)n; i++)
         {
             for (int j = i + 1; j < (int)n; j++)
             {
-                if (ar[j] < min_in_interval[i][j - 1])
+                if (ar[j] > max_in_interval[i][j - 1])
                 {
-                    min_in_interval[i][j] = ar[j];
+                    max_in_interval[i][j] = ar[j];
                 }
                 else
                 {
-                    min_in_interval[i][j] = min_in_interval[i][j - 1];
+                    max_in_interval[i][j] = max_in_interval[i][j - 1];
                 }
             }
         }
         for (int i = 0; i < (int)m; i++)
         {
-            results[i] = min_in_interval[queries[i].first][queries[i].second];
+            results[i] = max_in_interval[queries[i].first][queries[i].second];
         }
     }
 
-    // Root-N method to solve the RMQ problem
-    void run_root_N_method( const std::vector<int>& ar,
+    // Root-N method to solve the problem of finding
+    // the lexicographically largest string in a range
+    void run_root_N_method( const std::vector<std::string>& ar,
                             const std::vector<std::pair<int, int>>& queries,
-                            std::vector<int>& results )
+                            std::vector<std::string>& results )
     {
         size_t n = ar.size();
         size_t m = queries.size();
@@ -121,13 +129,13 @@ namespace min_int_query
         {
             numOfIntervals++;
         }
-        std::vector<int> min_in_interval(numOfIntervals, INT_MAX);
+        std::vector<std::string> max_in_interval(numOfIntervals, "");
 
         for (int i = 0; i < (int)n; i++)
         {
-            if (ar[i] < min_in_interval[i / rootN])
+            if (max_in_interval[i / rootN] == "" || ar[i] > max_in_interval[i / rootN])
             {
-                min_in_interval[i / rootN] = ar[i];
+                max_in_interval[i / rootN] = ar[i];
             }
         }
 
@@ -135,20 +143,20 @@ namespace min_int_query
         {
             int lo = queries[i].first;
             int hi = queries[i].second;
-            int min = INT_MAX;
+            std::string max = "";
             while (lo % rootN != 0 && lo <= hi)
             {
-                if (ar[lo] < min)
+                if (max == "" || ar[lo] > max)
                 {
-                    min = ar[lo];
+                    max = ar[lo];
                 }
                 lo++;
             }
             while ((hi + 1) % rootN != 0 && hi >= lo)
             {
-                if (ar[hi] < min)
+                if (max == "" || ar[hi] > max)
                 {
-                    min = ar[hi];
+                    max = ar[hi];
                 }
                 hi--;
             }
@@ -158,54 +166,54 @@ namespace min_int_query
                 int end = hi / rootN;
                 while (index <= end)
                 {
-                    if (min_in_interval[index] < min)
+                    if (max_in_interval[index] > max)
                     {
-                        min = min_in_interval[index];
+                        max = max_in_interval[index];
                     }
                     index++;
                 }
             }
-            results[i] = min;
+            results[i] = max;
         }
     }
 
 
     // Tests for both types of constructors
 
-    TEST( min_int_segment_tree_constructor, size_parameter_case1 )
+    TEST( max_string_segment_tree_constructor, size_parameter_case1 )
     {
         size_t n = 1;
-        segment_tree< int, node, set_default_value, merge > segtree(n);
+        segment_tree< std::string, node, set_default_value, merge > segtree(n);
         EXPECT_EQ(segtree.get_array_size(), n);
-        std::vector<int> array = segtree.get_array();
+        std::vector<std::string> array = segtree.get_array();
         EXPECT_EQ(array.size(), n);
     }
 
-    TEST( min_int_segment_tree_constructor, size_parameter_case2 )
+    TEST( max_string_segment_tree_constructor, size_parameter_case2 )
     {
         size_t n = 42;
-        segment_tree< int, node, set_default_value, merge > segtree(n);
+        segment_tree< std::string, node, set_default_value, merge > segtree(n);
         EXPECT_EQ(segtree.get_array_size(), n);
-        std::vector<int> array = segtree.get_array();
+        std::vector<std::string> array = segtree.get_array();
         EXPECT_EQ(array.size(), n);
     }
 
-    TEST( min_int_segment_tree_constructor, size_parameter_case3 )
+    TEST( max_string_segment_tree_constructor, size_parameter_case3 )
     {
         size_t n = 42000;
-        segment_tree< int, node, set_default_value, merge > segtree(n);
+        segment_tree< std::string, node, set_default_value, merge > segtree(n);
         EXPECT_EQ(segtree.get_array_size(), n);
-        std::vector<int> array = segtree.get_array();
+        std::vector<std::string> array = segtree.get_array();
         EXPECT_EQ(array.size(), n);
     }
 
-    TEST( min_int_segment_tree_constructor, vector_parameter_case1 )
+    TEST( max_string_segment_tree_constructor, vector_parameter_case1 )
     {
         size_t n = 1;
-        std::vector<int> parameter_array(n, 0);
-        segment_tree< int, node, set_default_value, merge > segtree(parameter_array);
+        std::vector<std::string> parameter_array(n);
+        segment_tree< std::string, node, set_default_value, merge > segtree(parameter_array);
         EXPECT_EQ(segtree.get_array_size(), n);
-        std::vector<int> array = segtree.get_array();
+        std::vector<std::string> array = segtree.get_array();
         EXPECT_EQ(array.size(), n);
         for (int i = 0; i < (int)array.size(); i++)
         {
@@ -213,14 +221,14 @@ namespace min_int_query
         }
     }
 
-    TEST( min_int_segment_tree_constructor, vector_parameter_case2 )
+    TEST( max_string_segment_tree_constructor, vector_parameter_case2 )
     {
         size_t n = 42;
-        std::vector<int> parameter_array;
-        fill_with_random_integers(n, parameter_array);
-        segment_tree< int, node, set_default_value, merge > segtree(parameter_array);
+        std::vector<std::string> parameter_array(n);
+        fill_with_random_strings(n, parameter_array);
+        segment_tree< std::string, node, set_default_value, merge > segtree(parameter_array);
         EXPECT_EQ(segtree.get_array_size(), n);
-        std::vector<int> array = segtree.get_array();
+        std::vector<std::string> array = segtree.get_array();
         EXPECT_EQ(array.size(), n);
         for (int i = 0; i < (int)array.size(); i++)
         {
@@ -228,14 +236,14 @@ namespace min_int_query
         }
     }
 
-    TEST( min_int_segment_tree_constructor, vector_parameter_case3 )
+    TEST( max_string_segment_tree_constructor, vector_parameter_case3 )
     {
         size_t n = 42000;
-        std::vector<int> parameter_array;
-        fill_with_random_integers(n, parameter_array);
-        segment_tree< int, node, set_default_value, merge > segtree(parameter_array);
+        std::vector<std::string> parameter_array(n);
+        fill_with_random_strings(n, parameter_array);
+        segment_tree< std::string, node, set_default_value, merge > segtree(parameter_array);
         EXPECT_EQ(segtree.get_array_size(), n);
-        std::vector<int> array = segtree.get_array();
+        std::vector<std::string> array = segtree.get_array();
         EXPECT_EQ(array.size(), n);
         for (int i = 0; i < (int)array.size(); i++)
         {
@@ -246,19 +254,20 @@ namespace min_int_query
 
     // Tests for range_query()
 
-    TEST( min_int_segment_tree_rquery, vector_parameter_case1 )
+    TEST( max_string_segment_tree_rquery, vector_parameter_case1 )
     {
         size_t n = 1;
-        std::vector<int> parameter_array;
-        fill_with_random_integers(n, parameter_array);
-
-        segment_tree< int, node, set_default_value, merge > segtree(parameter_array);
+        std::vector<std::string> parameter_array(n);
+        fill_with_random_strings(n, parameter_array);
+        
+        segment_tree< std::string, node, set_default_value, merge > segtree(parameter_array);
 
         size_t m = 1;
         std::vector<std::pair<int, int>> queries;
         fill_with_random_intervals(n, m, queries);
 
-        std::vector<int> segment_tree_results(m);
+        std::vector<std::string> segment_tree_results(m);
+
         for (int i = 0; i < (int)m; i++)
         {
             ASSERT_LE(queries[i].first, queries[i].second);
@@ -270,10 +279,10 @@ namespace min_int_query
 
         for (int i = 0; i < (int)m; i++)
         {
-            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).min;
+            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).max;
         }
 
-        std::vector<int> brute_force_results(m);
+        std::vector<std::string> brute_force_results(m);
         run_brute_force(parameter_array, queries, brute_force_results);
 
         for (int i = 0; i < (int)m; i++)
@@ -282,19 +291,20 @@ namespace min_int_query
         }
     }
 
-    TEST( min_int_segment_tree_rquery, vector_parameter_case2 )
+    TEST( max_string_segment_tree_rquery, vector_parameter_case2 )
     {
         size_t n = 42;
-        std::vector<int> parameter_array;
-        fill_with_random_integers(n, parameter_array);
-
-        segment_tree< int, node, set_default_value, merge > segtree(parameter_array);
+        std::vector<std::string> parameter_array(n);
+        fill_with_random_strings(n, parameter_array);
+        
+        segment_tree< std::string, node, set_default_value, merge > segtree(parameter_array);
 
         size_t m = 420;
         std::vector<std::pair<int, int>> queries;
         fill_with_random_intervals(n, m, queries);
 
-        std::vector<int> segment_tree_results(m);
+        std::vector<std::string> segment_tree_results(m);
+
         for (int i = 0; i < (int)m; i++)
         {
             ASSERT_LE(queries[i].first, queries[i].second);
@@ -306,10 +316,10 @@ namespace min_int_query
 
         for (int i = 0; i < (int)m; i++)
         {
-            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).min;
+            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).max;
         }
 
-        std::vector<int> brute_force_results(m);
+        std::vector<std::string> brute_force_results(m);
         run_brute_force(parameter_array, queries, brute_force_results);
 
         for (int i = 0; i < (int)m; i++)
@@ -317,7 +327,7 @@ namespace min_int_query
             EXPECT_EQ(brute_force_results[i], segment_tree_results[i]);
         }
 
-        std::vector<int> root_N_results(m);
+        std::vector<std::string> root_N_results(m);
         run_root_N_method(parameter_array, queries, root_N_results);
 
         for (int i = 0; i < (int)m; i++)
@@ -326,19 +336,20 @@ namespace min_int_query
         }
     }
 
-    TEST( min_int_segment_tree_rquery, vector_parameter_case3 )
+    TEST( max_string_segment_tree_rquery, vector_parameter_case3 )
     {
         size_t n = 42000;
-        std::vector<int> parameter_array;
-        fill_with_random_integers(n, parameter_array);
+        std::vector<std::string> parameter_array(n);
+        fill_with_random_strings(n, parameter_array);
 
-        segment_tree< int, node, set_default_value, merge > segtree(parameter_array);
+        segment_tree< std::string, node, set_default_value, merge > segtree(parameter_array);
 
         size_t m = 42000;
         std::vector<std::pair<int, int>> queries;
         fill_with_random_intervals(n, m, queries);
 
-        std::vector<int> segment_tree_results(m);
+        std::vector<std::string> segment_tree_results(m);
+
         for (int i = 0; i < (int)m; i++)
         {
             ASSERT_LE(queries[i].first, queries[i].second);
@@ -350,10 +361,10 @@ namespace min_int_query
 
         for (int i = 0; i < (int)m; i++)
         {
-            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).min;
+            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).max;
         }
 
-        std::vector<int> root_N_results(m);
+        std::vector<std::string> root_N_results(m);
         run_root_N_method(parameter_array, queries, root_N_results);
 
         for (int i = 0; i < (int)m; i++)
@@ -364,24 +375,24 @@ namespace min_int_query
 
 
     // Test for point_update()
-    TEST( min_int_segment_tree_pupdate, vector_parameter_case )
+    TEST( max_string_segment_tree_pupdate, vector_parameter_case )
     {
         size_t n = 42000;
-        std::vector<int> parameter_array;
-        fill_with_random_integers(n, parameter_array);
+        std::vector<std::string> parameter_array(n);
+        fill_with_random_strings(n, parameter_array);
 
         for (int index = 0; index < (int)n; index += 1000)
         {
-            segment_tree< int, node, set_default_value, merge > segtree(parameter_array);
+            segment_tree< std::string, node, set_default_value, merge > segtree(parameter_array);
 
-            int lowest_value_yet = -index;
-            segtree.point_update(index, lowest_value_yet);
+            std::string highest_value = "zzzzzz";
+            segtree.point_update(index, highest_value);
 
             size_t m = 420;
             std::vector<std::pair<int, int>> queries;
             fill_with_random_intervals(n, m, index, queries);
 
-            std::vector<int> segment_tree_results(m);
+            std::vector<std::string> segment_tree_results(m);
             for (int i = 0; i < (int)m; i++)
             {
                 ASSERT_LE(queries[i].first, queries[i].second);
@@ -395,12 +406,12 @@ namespace min_int_query
 
             for (int i = 0; i < (int)m; i++)
             {
-                segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).min;
+                segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).max;
             }
 
             for (int i = 0; i < (int)m; i++)
             {
-                EXPECT_EQ(segment_tree_results[i], -index);
+                EXPECT_EQ(segment_tree_results[i], "zzzzzz");
             }
         }
     }
