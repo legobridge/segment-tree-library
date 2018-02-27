@@ -4,29 +4,26 @@
 #include <vector>
 #include <utility>
 #include <random>
-#include <climits>
 
-namespace min_int_query
+namespace sum_int_query
 {
     // Structures and methods for testing the 
-    // minimum integer query form of the segment tree
+    // sum of int query form of the segment tree
     struct node
     {
-        int min;
+        int sum;
     };
 
     void set_default_value( node& x, int y )
     {
-        x.min = y;
+        x.sum = y;
     }
 
     node merge( node* a, node* b )
     {
-        if (a->min <= b->min)
-        {
-            return *a;
-        }
-        return *b;
+        node ans;
+        ans.sum = a->sum + b->sum;
+        return ans;
     }
     
     // Generates an array of n random integers ranging from 1 to n
@@ -34,7 +31,7 @@ namespace min_int_query
     {
         std::random_device rd;
         std::mt19937 gen(rd());
-        std::uniform_int_distribution<> dis(1, n);
+        std::uniform_real_distribution<> dis(1, n);
         for (int i = 0; i < (int)n; i++)
         {
             parameter_array.push_back(dis(gen));
@@ -76,103 +73,31 @@ namespace min_int_query
         }
     }
 
-    // Brute force method to solve RMQ problem
+    // Brute force method to solve the sum of interval problem
     void run_brute_force( const std::vector<int>& ar, 
                           const std::vector<std::pair<int, int>>& queries, 
                           std::vector<int>& results )
     {
         size_t n = ar.size();
         size_t m = queries.size();
-        std::vector<std::vector<int>> min_in_interval(n, std::vector<int>(n));
-        for (int i = 0; i < (int)n; i++)
+        std::vector<int> cumulative_sum(n);
+        cumulative_sum[0] = ar[0];
+        for (int i = 1; i < (int)n; i++)
         {
-            min_in_interval[i][i] = ar[i];
-        }
-        for (int i = 0; i < (int)n; i++)
-        {
-            for (int j = i + 1; j < (int)n; j++)
-            {
-                if (ar[j] < min_in_interval[i][j - 1])
-                {
-                    min_in_interval[i][j] = ar[j];
-                }
-                else
-                {
-                    min_in_interval[i][j] = min_in_interval[i][j - 1];
-                }
-            }
+            cumulative_sum[i] = cumulative_sum[i - 1] + ar[i];
         }
         for (int i = 0; i < (int)m; i++)
         {
-            results[i] = min_in_interval[queries[i].first][queries[i].second];
-        }
-    }
-
-    // Root-N method to solve the RMQ problem
-    void run_root_N_method( const std::vector<int>& ar,
-                            const std::vector<std::pair<int, int>>& queries,
-                            std::vector<int>& results )
-    {
-        size_t n = ar.size();
-        size_t m = queries.size();
-        int rootN = (int)sqrt(n);
-        size_t numOfIntervals = n / rootN;
-        if (n % rootN != 0)
-        {
-            numOfIntervals++;
-        }
-        std::vector<int> minInInterval(numOfIntervals, INT_MAX);
-
-        for (int i = 0; i < (int)n; i++)
-        {
-            if (ar[i] < minInInterval[i / rootN])
-            {
-                minInInterval[i / rootN] = ar[i];
-            }
-        }
-
-        for (int i = 0; i < (int)m; i++)
-        {
-            int lo = queries[i].first;
-            int hi = queries[i].second;
-            int min = INT_MAX;
-            while (lo % rootN != 0 && lo <= hi)
-            {
-                if (ar[lo] < min)
-                {
-                    min = ar[lo];
-                }
-                lo++;
-            }
-            while ((hi + 1) % rootN != 0 && hi >= lo)
-            {
-                if (ar[hi] < min)
-                {
-                    min = ar[hi];
-                }
-                hi--;
-            }
-            if (lo <= hi)
-            {
-                int index = lo / rootN;
-                int end = hi / rootN;
-                while (index <= end)
-                {
-                    if (minInInterval[index] < min)
-                    {
-                        min = minInInterval[index];
-                    }
-                    index++;
-                }
-            }
-            results[i] = min;
+            results[i] = cumulative_sum[queries[i].second] - 
+                         cumulative_sum[queries[i].first] + 
+                         ar[queries[i].first];
         }
     }
 
 
     // Tests for both types of constructors
 
-    TEST( min_int_segment_tree_constructor, size_parameter_case1 )
+    TEST( sum_int_segment_tree_constructor, size_parameter_case1 )
     {
         size_t n = 1;
         segment_tree< int, node, set_default_value, merge > segtree(n);
@@ -185,7 +110,7 @@ namespace min_int_query
         }
     }
 
-    TEST( min_int_segment_tree_constructor, size_parameter_case2 )
+    TEST( sum_int_segment_tree_constructor, size_parameter_case2 )
     {
         size_t n = 42;
         segment_tree< int, node, set_default_value, merge > segtree(n);
@@ -198,7 +123,7 @@ namespace min_int_query
         }
     }
 
-    TEST( min_int_segment_tree_constructor, size_parameter_case3 )
+    TEST( sum_int_segment_tree_constructor, size_parameter_case3 )
     {
         size_t n = 42000;
         segment_tree< int, node, set_default_value, merge > segtree(n);
@@ -211,7 +136,7 @@ namespace min_int_query
         }
     }
 
-    TEST( min_int_segment_tree_constructor, vector_parameter_case1 )
+    TEST( sum_int_segment_tree_constructor, vector_parameter_case1 )
     {
         size_t n = 1;
         std::vector<int> parameter_array(n, 0);
@@ -225,7 +150,7 @@ namespace min_int_query
         }
     }
 
-    TEST( min_int_segment_tree_constructor, vector_parameter_case2 )
+    TEST( sum_int_segment_tree_constructor, vector_parameter_case2 )
     {
         size_t n = 42;
         std::vector<int> parameter_array;
@@ -240,7 +165,7 @@ namespace min_int_query
         }
     }
 
-    TEST( min_int_segment_tree_constructor, vector_parameter_case3 )
+    TEST( sum_int_segment_tree_constructor, vector_parameter_case3 )
     {
         size_t n = 42000;
         std::vector<int> parameter_array;
@@ -258,12 +183,12 @@ namespace min_int_query
 
     // Tests for range_query()
 
-    TEST( min_int_segment_tree_rquery, vector_parameter_case1 )
+    TEST( sum_int_segment_tree_rquery, vector_parameter_case1 )
     {
         size_t n = 1;
         std::vector<int> parameter_array;
         fill_with_random_integers(n, parameter_array);
-
+        
         segment_tree< int, node, set_default_value, merge > segtree(parameter_array);
 
         size_t m = 1;
@@ -278,24 +203,24 @@ namespace min_int_query
             ASSERT_LT(queries[i].second, n);
             ASSERT_GE(queries[i].first, 0);
             ASSERT_GE(queries[i].second, 0);
-            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).min;
+            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).sum;
         }
 
         std::vector<int> brute_force_results(m);
         run_brute_force(parameter_array, queries, brute_force_results);
-
+        
         for (int i = 0; i < (int)m; i++)
         {
             EXPECT_EQ(brute_force_results[i], segment_tree_results[i]);
         }
     }
 
-    TEST( min_int_segment_tree_rquery, vector_parameter_case2 )
+    TEST( sum_int_segment_tree_rquery, vector_parameter_case2 )
     {
         size_t n = 42;
         std::vector<int> parameter_array;
         fill_with_random_integers(n, parameter_array);
-
+        
         segment_tree< int, node, set_default_value, merge > segtree(parameter_array);
 
         size_t m = 420;
@@ -310,35 +235,27 @@ namespace min_int_query
             ASSERT_LT(queries[i].second, n);
             ASSERT_GE(queries[i].first, 0);
             ASSERT_GE(queries[i].second, 0);
-            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).min;
+            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).sum;
         }
 
         std::vector<int> brute_force_results(m);
         run_brute_force(parameter_array, queries, brute_force_results);
-
+        
         for (int i = 0; i < (int)m; i++)
         {
             EXPECT_EQ(brute_force_results[i], segment_tree_results[i]);
         }
-
-        std::vector<int> root_N_results(m);
-        run_root_N_method(parameter_array, queries, root_N_results);
-
-        for (int i = 0; i < (int)m; i++)
-        {
-            EXPECT_EQ(root_N_results[i], segment_tree_results[i]) << i;
-        }
     }
 
-    TEST( min_int_segment_tree_rquery, vector_parameter_case3 )
+    TEST( sum_int_segment_tree_rquery, vector_parameter_case3 )
     {
         size_t n = 42000;
         std::vector<int> parameter_array;
         fill_with_random_integers(n, parameter_array);
-
+        
         segment_tree< int, node, set_default_value, merge > segtree(parameter_array);
 
-        size_t m = 42000;
+        size_t m = 4200;
         std::vector<std::pair<int, int>> queries;
         fill_with_random_intervals(n, m, queries);
 
@@ -350,21 +267,21 @@ namespace min_int_query
             ASSERT_LT(queries[i].second, n);
             ASSERT_GE(queries[i].first, 0);
             ASSERT_GE(queries[i].second, 0);
-            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).min;
+            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).sum;
         }
 
-        std::vector<int> root_N_results(m);
-        run_root_N_method(parameter_array, queries, root_N_results);
+        std::vector<int> brute_force_results(m);
+        run_brute_force(parameter_array, queries, brute_force_results);
 
         for (int i = 0; i < (int)m; i++)
         {
-            EXPECT_EQ(root_N_results[i], segment_tree_results[i]);
+            EXPECT_EQ(brute_force_results[i], segment_tree_results[i]);
         }
     }
 
 
     // Test for point_update()
-    TEST( min_int_segment_tree_pupdate, vector_parameter_case )
+    /*TEST( sum_int_segment_tree_pupdate, vector_parameter_case )
     {
         size_t n = 42000;
         std::vector<int> parameter_array;
@@ -391,7 +308,7 @@ namespace min_int_query
                 ASSERT_GE(queries[i].second, 0);
                 ASSERT_LE(queries[i].first, index);
                 ASSERT_GE(queries[i].second, index);
-                segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).min;
+                segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).sum;
             }
 
             for (int i = 0; i < (int)m; i++)
@@ -399,5 +316,5 @@ namespace min_int_query
                 EXPECT_EQ(segment_tree_results[i], -index);
             }
         }
-    }
+    }*/
 }
