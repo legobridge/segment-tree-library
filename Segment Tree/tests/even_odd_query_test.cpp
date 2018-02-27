@@ -5,24 +5,27 @@
 #include <utility>
 #include <random>
 
-namespace sum_int_query
+namespace even_odd_query
 {
-    // Structures and methods for testing the 
-    // sum of int query form of the segment tree
+    // Structures and methods for testing the segment tree
+    // that stores the number of even and odd numbers in an interval
     struct node
     {
-        int sum;
+        int odd;
+        int even;
     };
 
     void set_default_value( node& x, int y )
     {
-        x.sum = y;
+        x.odd = y % 2;
+        x.even = 1 - x.odd;
     }
 
     node merge( node* a, node* b )
     {
         node ans;
-        ans.sum = a->sum + b->sum;
+        ans.odd = a->odd + b->odd;
+        ans.even = a->even + b->even;
         return ans;
     }
     
@@ -73,31 +76,37 @@ namespace sum_int_query
         }
     }
 
-    // Brute force method to solve the sum of interval problem
+    // Brute force method to solve the even/odd problem
     void run_brute_force( const std::vector<int>& ar, 
                           const std::vector<std::pair<int, int>>& queries, 
-                          std::vector<int>& results )
+                          std::vector<node>& results )
     {
         size_t n = ar.size();
         size_t m = queries.size();
-        std::vector<int> cumulative_sum(n);
-        cumulative_sum[0] = ar[0];
+        std::vector<int> cumulative_odds(n);
+        std::vector<int> cumulative_evens(n);
+        cumulative_odds[0] = ar[0] % 2;
+        cumulative_evens[0] = 1 - cumulative_odds[0];
         for (int i = 1; i < (int)n; i++)
         {
-            cumulative_sum[i] = cumulative_sum[i - 1] + ar[i];
+            cumulative_odds[i] = cumulative_odds[i - 1] + ar[i] % 2;
+            cumulative_evens[i] = cumulative_evens[i - 1] + (1 - ar[i] % 2);
         }
         for (int i = 0; i < (int)m; i++)
         {
-            results[i] = cumulative_sum[queries[i].second] - 
-                         cumulative_sum[queries[i].first] + 
-                         ar[queries[i].first];
+            results[i].odd = cumulative_odds[queries[i].second] - 
+                         cumulative_odds[queries[i].first] + 
+                         ar[queries[i].first] % 2;
+            results[i].even = cumulative_evens[queries[i].second] - 
+                         cumulative_evens[queries[i].first] + 
+                         (1 - ar[queries[i].first] % 2);
         }
     }
 
 
     // Tests for both types of constructors
 
-    TEST( sum_int_segment_tree_constructor, size_parameter_case1 )
+    TEST( even_odd_segment_tree_constructor, size_parameter_case1 )
     {
         size_t n = 1;
         segment_tree< int, node, set_default_value, merge > segtree(n);
@@ -110,7 +119,7 @@ namespace sum_int_query
         }
     }
 
-    TEST( sum_int_segment_tree_constructor, size_parameter_case2 )
+    TEST( even_odd_segment_tree_constructor, size_parameter_case2 )
     {
         size_t n = 42;
         segment_tree< int, node, set_default_value, merge > segtree(n);
@@ -123,7 +132,7 @@ namespace sum_int_query
         }
     }
 
-    TEST( sum_int_segment_tree_constructor, size_parameter_case3 )
+    TEST( even_odd_segment_tree_constructor, size_parameter_case3 )
     {
         size_t n = 42000;
         segment_tree< int, node, set_default_value, merge > segtree(n);
@@ -136,7 +145,7 @@ namespace sum_int_query
         }
     }
 
-    TEST( sum_int_segment_tree_constructor, vector_parameter_case1 )
+    TEST( even_odd_segment_tree_constructor, vector_parameter_case1 )
     {
         size_t n = 1;
         std::vector<int> parameter_array(n, 0);
@@ -150,7 +159,7 @@ namespace sum_int_query
         }
     }
 
-    TEST( sum_int_segment_tree_constructor, vector_parameter_case2 )
+    TEST( even_odd_segment_tree_constructor, vector_parameter_case2 )
     {
         size_t n = 42;
         std::vector<int> parameter_array;
@@ -165,7 +174,7 @@ namespace sum_int_query
         }
     }
 
-    TEST( sum_int_segment_tree_constructor, vector_parameter_case3 )
+    TEST( even_odd_segment_tree_constructor, vector_parameter_case3 )
     {
         size_t n = 42000;
         std::vector<int> parameter_array;
@@ -183,7 +192,7 @@ namespace sum_int_query
 
     // Tests for range_query()
 
-    TEST( sum_int_segment_tree_rquery, vector_parameter_case1 )
+    TEST( even_odd_segment_tree_rquery, vector_parameter_case1 )
     {
         size_t n = 1;
         std::vector<int> parameter_array;
@@ -195,7 +204,7 @@ namespace sum_int_query
         std::vector<std::pair<int, int>> queries;
         fill_with_random_intervals(n, m, queries);
 
-        std::vector<int> segment_tree_results(m);
+        std::vector<node> segment_tree_results(m);
         for (int i = 0; i < (int)m; i++)
         {
             ASSERT_LE(queries[i].first, queries[i].second);
@@ -203,19 +212,20 @@ namespace sum_int_query
             ASSERT_LT(queries[i].second, n);
             ASSERT_GE(queries[i].first, 0);
             ASSERT_GE(queries[i].second, 0);
-            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).sum;
+            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second));
         }
 
-        std::vector<int> brute_force_results(m);
+        std::vector<node> brute_force_results(m);
         run_brute_force(parameter_array, queries, brute_force_results);
         
         for (int i = 0; i < (int)m; i++)
         {
-            EXPECT_EQ(brute_force_results[i], segment_tree_results[i]);
+            EXPECT_EQ(brute_force_results[i].odd, segment_tree_results[i].odd);
+            EXPECT_EQ(brute_force_results[i].even, segment_tree_results[i].even);
         }
     }
 
-    TEST( sum_int_segment_tree_rquery, vector_parameter_case2 )
+    TEST( even_odd_segment_tree_rquery, vector_parameter_case2 )
     {
         size_t n = 42;
         std::vector<int> parameter_array;
@@ -227,7 +237,7 @@ namespace sum_int_query
         std::vector<std::pair<int, int>> queries;
         fill_with_random_intervals(n, m, queries);
 
-        std::vector<int> segment_tree_results(m);
+        std::vector<node> segment_tree_results(m);
         for (int i = 0; i < (int)m; i++)
         {
             ASSERT_LE(queries[i].first, queries[i].second);
@@ -235,19 +245,20 @@ namespace sum_int_query
             ASSERT_LT(queries[i].second, n);
             ASSERT_GE(queries[i].first, 0);
             ASSERT_GE(queries[i].second, 0);
-            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).sum;
+            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second));
         }
 
-        std::vector<int> brute_force_results(m);
+        std::vector<node> brute_force_results(m);
         run_brute_force(parameter_array, queries, brute_force_results);
         
         for (int i = 0; i < (int)m; i++)
         {
-            EXPECT_EQ(brute_force_results[i], segment_tree_results[i]);
+            EXPECT_EQ(brute_force_results[i].odd, segment_tree_results[i].odd);
+            EXPECT_EQ(brute_force_results[i].even, segment_tree_results[i].even);
         }
     }
 
-    TEST( sum_int_segment_tree_rquery, vector_parameter_case3 )
+    TEST( even_odd_segment_tree_rquery, vector_parameter_case3 )
     {
         size_t n = 42000;
         std::vector<int> parameter_array;
@@ -259,7 +270,7 @@ namespace sum_int_query
         std::vector<std::pair<int, int>> queries;
         fill_with_random_intervals(n, m, queries);
 
-        std::vector<int> segment_tree_results(m);
+        std::vector<node> segment_tree_results(m);
         for (int i = 0; i < (int)m; i++)
         {
             ASSERT_LE(queries[i].first, queries[i].second);
@@ -267,21 +278,22 @@ namespace sum_int_query
             ASSERT_LT(queries[i].second, n);
             ASSERT_GE(queries[i].first, 0);
             ASSERT_GE(queries[i].second, 0);
-            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).sum;
+            segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second));
         }
 
-        std::vector<int> brute_force_results(m);
+        std::vector<node> brute_force_results(m);
         run_brute_force(parameter_array, queries, brute_force_results);
-
+        
         for (int i = 0; i < (int)m; i++)
         {
-            EXPECT_EQ(brute_force_results[i], segment_tree_results[i]);
+            EXPECT_EQ(brute_force_results[i].odd, segment_tree_results[i].odd);
+            EXPECT_EQ(brute_force_results[i].even, segment_tree_results[i].even);
         }
     }
 
 
     // Test for point_update()
-    TEST( sum_int_segment_tree_pupdate, vector_parameter_case )
+    TEST( even_odd_segment_tree_pupdate, vector_parameter_case )
     {
         size_t n = 4200;
         std::vector<int> parameter_array;
@@ -306,27 +318,31 @@ namespace sum_int_query
                 ASSERT_GE(queries[i].second, index);
             }
             
-            int initial_value_at_index = parameter_array[index];
-            std::vector<int> initial_segment_tree_results(m);
+            bool initial_value_was_odd = (parameter_array[index] % 2 == 1);
+            std::vector<node> initial_segment_tree_results(m);
 
             for (int i = 0; i < (int)m; i++)
             {
-                initial_segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).sum;
+                initial_segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second));
             }
 
             int new_value_at_index = 42;
+            bool new_value_at_index_is_odd = false;
             segtree.point_update(index, new_value_at_index);
 
-            std::vector<int> new_segment_tree_results(m);
+            std::vector<node> new_segment_tree_results(m);
 
             for (int i = 0; i < (int)m; i++)
             {
-                new_segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second)).sum;
+                new_segment_tree_results[i] = (segtree.range_query(queries[i].first, queries[i].second));
             }
 
             for (int i = 0; i < (int)m; i++)
             {
-                EXPECT_EQ(initial_segment_tree_results[i] - initial_value_at_index, new_segment_tree_results[i] - new_value_at_index);
+                EXPECT_EQ(initial_segment_tree_results[i].odd - initial_value_was_odd,
+                          new_segment_tree_results[i].odd - new_value_at_index_is_odd);
+                EXPECT_EQ(initial_segment_tree_results[i].even - (1 - initial_value_was_odd),
+                          new_segment_tree_results[i].even - (1 - new_value_at_index_is_odd));
             }
         }
     }

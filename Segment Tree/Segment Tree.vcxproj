@@ -55,6 +55,7 @@
     <ClInclude Include="include\pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="tests\even_odd_query_test.cpp" />
     <ClCompile Include="tests\min_query_tests.cpp" />
     <ClCompile Include="tests\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
